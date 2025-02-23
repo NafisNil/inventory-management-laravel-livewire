@@ -26,25 +26,41 @@ class CompanyController extends AdminController
     protected function grid()
     {
         $grid = new Grid(new Company());
-
+        $grid->quickSearch('name', 'email', 'website', 'status', 'address', 'phone_number');
         $grid->column('id', __('Id'));
-        $grid->column('owner_id', __('Owner id'));
+        $grid->column('owner_id', __('Owner id'))->display(function($owner_id){
+            
+             $user = User::find($owner_id);
+             
+             if ($user == null) {
+                 # code...
+                 return 'Owner not found';
+             }
+       
+             return $user->name;
+ 
+         });
+       
         $grid->column('name', __('Name'));
         $grid->column('email', __('Email'));
         $grid->column('logo', __('Logo'));
         $grid->column('website', __('Website'));
-        $grid->column('about', __('About'));
+        $grid->column('about', __('About'))->hide();
         $grid->column('status', __('Status'));
         $grid->column('licensed_expire', __('Licensed expire'));
         $grid->column('address', __('Address'));
         $grid->column('phone_number', __('Phone number'));
         $grid->column('phone_number2', __('Phone number2'));
-        $grid->column('color', __('Color'));
-        $grid->column('slogan', __('Slogan'));
-        $grid->column('facebook', __('Facebook'));
-        $grid->column('twitter', __('Twitter'));
-        $grid->column('created_at', __('Created at'));
-        $grid->column('updated_at', __('Updated at'));
+        $grid->column('color', __('Color'))->hide();
+        $grid->column('slogan', __('Slogan'))->hide();
+        $grid->column('facebook', __('Facebook'))->hide();
+        $grid->column('twitter', __('Twitter'))->hide();
+        $grid->column('created_at', __('Registered at'))->display(function ($created_at) {
+            return date('d M,Y', strtotime($created_at));
+        })->sortable();
+        $grid->column('updated_at', __('Updated at'))->display(function ($created_at) {
+            return date('d M,Y', strtotime($created_at));
+        })->sortable();
 
         return $grid;
     }
@@ -75,7 +91,9 @@ class CompanyController extends AdminController
         $show->field('slogan', __('Slogan'));
         $show->field('facebook', __('Facebook'));
         $show->field('twitter', __('Twitter'));
-        $show->field('created_at', __('Created at'));
+        $show->field('created_at', __('Registered at'))->display(function ($created_at) {
+            return date('d M,Y', strtotime($created_at));
+        });
         $show->field('updated_at', __('Updated at'));
 
         return $show;
@@ -95,14 +113,19 @@ class CompanyController extends AdminController
         $company_admin = [];
         foreach ($admin_role_users as $key=>$admin_role_user) {
             $user= User::find($admin_role_user->user_id);
+            if ($user == null) {
+                # code...
+                continue;
+            }
+            $company_admin[$user->id] = $user->name.'-'.$user->id;
         }
         $form = new Form(new Company());
 
-        $form->number('owner_id', __('Owner id'));
+        $form->select('owner_id', __('Owner'))->options($company_admin)->rules('required');
         $form->text('name', __('Name'));
         $form->email('email', __('Email'));
-        $form->textarea('logo', __('Logo'));
-        $form->text('website', __('Website'));
+        $form->image('logo', __('Logo'));
+        $form->url('website', __('Website'));
         $form->textarea('about', __('About'));
         $form->text('status', __('Status'));
         $form->date('licensed_expire', __('Licensed expire'))->default(date('Y-m-d'));
@@ -111,8 +134,8 @@ class CompanyController extends AdminController
         $form->text('phone_number2', __('Phone number2'));
         $form->color('color', __('Color'));
         $form->text('slogan', __('Slogan'));
-        $form->text('facebook', __('Facebook'));
-        $form->text('twitter', __('Twitter'));
+        $form->url('facebook', __('Facebook'));
+        $form->url('twitter', __('Twitter'));
 
         return $form;
     }
