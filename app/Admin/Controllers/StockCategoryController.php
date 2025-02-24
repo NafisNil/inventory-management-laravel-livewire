@@ -26,17 +26,29 @@ class StockCategoryController extends AdminController
     protected function grid()
     {
         $grid = new Grid(new StockCategory());
+        $user = Admin::user();
+        
+       $grid->model()->where('company_id', $user->company_id);
 
-        $grid->column('id', __('Id'));
+        $grid->quickSearch('name', 'description', 'status');
+        $grid->column('id', __('Id'))->sortable();
         $grid->column('company_id', __('Company id'));
         $grid->column('name', __('Name'));
         $grid->column('description', __('Description'));
         $grid->column('status', __('Status'));
-        $grid->column('image', __('Image'));
-        $grid->column('buying_price', __('Buying price'));
-        $grid->column('selling_price', __('Selling price'));
-        $grid->column('expected_price', __('Expected price'));
-        $grid->column('earned_price', __('Earned price'));
+        $grid->picture('image', __('Image'))->image();
+        $grid->column('buying_price', __('Investment'))->display(function($buying_price){
+            return number_format($buying_price, 2);
+        })->sortable();
+        $grid->column('selling_price', __('Selling price'))->display(function($selling_price){
+            return number_format($selling_price, 2);
+        })->sortable();
+        $grid->column('expected_price', __('Expected price'))->display(function($expected_price){
+            return number_format($expected_price, 2);
+        })->sortable();
+        $grid->column('earned_price', __('Earned price'))->display(function($earned_price){
+            return number_format($earned_price, 2);
+        })->sortable();
         $grid->column('created_at', __('Created at'));
         $grid->column('updated_at', __('Updated at'));
 
@@ -80,14 +92,12 @@ class StockCategoryController extends AdminController
         $user = Admin::user();
 
         $form->number('company_id', __('Company id'))->default($user->company_id)->readonly();
-        $form->text('name', __('Name'));
-        $form->text('description', __('Description'));
-        $form->text('status', __('Status'))->default('active');
+        $form->text('name', __('Category Name'))->rules('required|min:3|max:250');
+        $form->textarea('description', __('Category Description'));
+        $form->radio('status', __('Status'))->options(['active' => 'Active', 'inactive' => 'Inactive'])
+        ->default('active')->rules('required');
         $form->image('image', __('Image'));
-        $form->number('buying_price', __('Buying price'));
-        $form->number('selling_price', __('Selling price'));
-        $form->number('expected_price', __('Expected price'));
-        $form->number('earned_price', __('Earned price'));
+       
 
         return $form;
     }
