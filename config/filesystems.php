@@ -38,8 +38,10 @@ return [
 
         'admin' => [
             'driver' => 'local',
-            'root' => storage_path('app'),
-            'throw' => false,
+            'root' => public_path('storage'),
+            'url' => env('APP_URL').'/storage',
+           'visibility' => 'public'
+            
         ],
 
         'public' => [

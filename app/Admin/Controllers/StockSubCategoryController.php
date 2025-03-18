@@ -7,7 +7,8 @@ use Encore\Admin\Controllers\AdminController;
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
 use Encore\Admin\Show;
-
+use Encore\Admin\Facades\Admin;
+use App\Models\StockCategory;
 class StockSubCategoryController extends AdminController
 {
     /**
@@ -26,22 +27,44 @@ class StockSubCategoryController extends AdminController
     {
         $grid = new Grid(new StockSubCategory());
 
-        $grid->column('id', __('Id'));
+        $user = Admin::user();
+        $grid->quickSearch('name', 'status');
+       $grid->model()->where('company_id', $user->company_id);
+       $grid->column('company_id', __('Company id'));
         $grid->column('name', __('Name'));
-        $grid->column('company_id', __('Company id'));
-        $grid->column('stock_category_id', __('Stock category id'));
-        $grid->column('description', __('Description'));
-        $grid->column('status', __('Status'));
-        $grid->column('image', __('Image'));
-        $grid->column('buying_price', __('Buying price'));
-        $grid->column('selling_price', __('Selling price'));
-        $grid->column('expected_price', __('Expected price'));
-        $grid->column('earned_price', __('Earned price'));
-        $grid->column('measurement_unit', __('Measurement unit'));
-        $grid->column('current_quantity', __('Current quantity'));
-        $grid->column('reorder_level', __('Reorder level'));
-        $grid->column('created_at', __('Created at'));
-        $grid->column('updated_at', __('Updated at'));
+      
+        $grid->column('stock_category_id', __('Stock category id'))->display(function($stock_category_id){
+            $categories = StockCategory::find($stock_category_id);
+            if($categories){
+                return $categories->name;
+            }
+           return 'N/A';
+        });
+        $grid->column('description', __('Description'))->hide();
+        $grid->column('status', __('Status'))->label([
+            'active' => 'success',
+            'inactive' => 'danger',
+            'class' => 'rounded',
+            'zooming' => true
+        ]);
+        $grid->column('image', __('Image'))->lightbox(['width' => 60, 'height' => 60]);;
+        $grid->column('buying_price', __('Investment'))->sortable();
+        $grid->column('selling_price', __('Selling price'))->sortable();
+        $grid->column('expected_price', __('Expected price'))->sortable();
+        $grid->column('earned_price', __('Earned price'))->sortable();
+    
+        $grid->column('current_quantity', __('Current quantity'))->display(function($current_quantity){
+            return number_format($current_quantity, 2).' '.$this->measurement_unit;
+        })->sortable();
+        $grid->column('reorder_level', __('Reorder level'))->display(function($current_quantity){
+            return number_format($current_quantity, 2);
+        })->sortable()->editable();
+        $grid->column('created_at', __('Created at'))->display(function ($created_at) {
+            return date('d M,Y', strtotime($created_at));
+        })->sortable();;
+        $grid->column('updated_at', __('Updated at'))->display(function ($updated_at) {
+            return date('d M,Y', strtotime($updated_at));
+        })->sortable();
 
         return $grid;
     }
@@ -70,8 +93,12 @@ class StockSubCategoryController extends AdminController
         $show->field('measurement_unit', __('Measurement unit'));
         $show->field('current_quantity', __('Current quantity'));
         $show->field('reorder_level', __('Reorder level'));
-        $show->field('created_at', __('Created at'));
-        $show->field('updated_at', __('Updated at'));
+        $show->field('created_at', __('Created at'))>display(function ($created_at) {
+            return date('d M,Y', strtotime($created_at));
+        })->sortable();;
+        $show->field('updated_at', __('Updated at'))>display(function ($updated_at) {
+            return date('d M,Y', strtotime($updated_at));
+        })->sortable();
 
         return $show;
     }
@@ -84,20 +111,23 @@ class StockSubCategoryController extends AdminController
     protected function form()
     {
         $form = new Form(new StockSubCategory());
-
-        $form->text('name', __('Name'));
-        $form->number('company_id', __('Company id'));
-        $form->number('stock_category_id', __('Stock category id'));
+        $user = Admin::user();
+       
+        $form->hidden('company_id',__('Company ID'))->default($user->company_id);
+       
+         $categories =  StockCategory::where(['company_id'=>$user->company_id, 'status'=>'active'])->get()->pluck('name', 'id');
+       //  return $categories;
+      $form->text('name', __('Name'))->rules('required');
+   //     $form->select('company_id', __('Company id'))->options($categories)->rules('required');
+        $form->select('stock_category_id', __('Stock category id'))->options($categories)->rules('required');
         $form->text('description', __('Description'));
-        $form->text('status', __('Status'))->default('active');
+        $form->radio('status', __('Status'))->options(['active' => 'Active', 'inactive' => 'Inactive'])
+        ->default('active')->rules('required');
         $form->image('image', __('Image'));
-        $form->number('buying_price', __('Buying price'));
-        $form->number('selling_price', __('Selling price'));
-        $form->number('expected_price', __('Expected price'));
-        $form->number('earned_price', __('Earned price'));
-        $form->text('measurement_unit', __('Measurement unit'));
-        $form->number('current_quantity', __('Current quantity'));
-        $form->number('reorder_level', __('Reorder level'));
+
+        $form->text('measurement_unit', __('Measurement unit'))->rules('required');
+
+        $form->decimal('reorder_level', __('Reorder level'))->rules('required');
 
         return $form;
     }

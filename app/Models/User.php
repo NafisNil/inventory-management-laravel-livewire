@@ -27,6 +27,57 @@ class User extends Administrator
         'password',
     ];
 
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+          $name = "";
+          if ($model->first_name != null  && strlen($model->first_name) > 0) {
+              $name = $model->first_name;
+          }
+            # code...
+            if ($model->last_name != null && strlen($model->last_name) > 0) {
+                $name = $name . ' ' . $model->last_name;
+            }
+
+            $name = trim($name);
+            if ($name  != null && strlen($name) > 0) {
+                # code...
+                $model->name = $name;
+            }
+         
+            $model->username = $model->email;
+            $model->password = bcrypt('admin');
+     
+            return $model;
+          });
+
+
+          static::updating(function ($model) {
+            $name = "";
+            if ($model->first_name != null  && strlen($model->first_name) > 0) {
+                $name = $model->first_name;
+            }
+              # code...
+              if ($model->last_name != null && strlen($model->last_name) > 0) {
+                  $name = $name . ' ' . $model->last_name;
+              }
+  
+              $name = trim($name);
+              if ($name == null && strlen($name) == 0) {
+                  # code...
+                  $model->name = $name;
+              }
+
+              $model->username = $model->email;
+           
+              return $model;
+            });
+
+
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *
