@@ -43,11 +43,11 @@ class StockCategoryController extends AdminController
         $grid->column('selling_price', __('Selling price'))->display(function($selling_price){
             return number_format($selling_price, 2);
         })->sortable();
-        $grid->column('expected_price', __('Expected price'))->display(function($expected_price){
-            return number_format($expected_price, 2);
+        $grid->column('expected_profit', __('Expected Profit'))->display(function($expected_profit){
+            return number_format($expected_profit, 2);
         })->sortable();
-        $grid->column('earned_price', __('Earned price'))->display(function($earned_price){
-            return number_format($earned_price, 2);
+        $grid->column('earned_profit', __('Earned Profit'))->display(function($earned_profit){
+            return number_format($earned_profit, 2);
         })->sortable();
         $grid->column('created_at', __('Created at'));
         $grid->column('updated_at', __('Updated at'));
@@ -73,8 +73,8 @@ class StockCategoryController extends AdminController
         $show->field('image', __('Image'));
         $show->field('buying_price', __('Buying price'));
         $show->field('selling_price', __('Selling price'));
-        $show->field('expected_price', __('Expected price'));
-        $show->field('earned_price', __('Earned price'));
+        $show->field('expected_profit', __('Expected Profit'));
+        $show->field('earned_profit', __('Earned Profit'));
         $show->field('created_at', __('Created at'));
         $show->field('updated_at', __('Updated at'));
 

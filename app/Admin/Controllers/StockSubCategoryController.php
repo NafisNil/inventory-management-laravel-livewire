@@ -50,8 +50,8 @@ class StockSubCategoryController extends AdminController
         $grid->column('image', __('Image'))->lightbox(['width' => 60, 'height' => 60]);;
         $grid->column('buying_price', __('Investment'))->sortable();
         $grid->column('selling_price', __('Selling price'))->sortable();
-        $grid->column('expected_price', __('Expected price'))->sortable();
-        $grid->column('earned_price', __('Earned price'))->sortable();
+        $grid->column('expected_profit', __('Expected Profit'))->sortable();
+        $grid->column('earned_profit', __('Earned Profit'))->sortable();
     
         $grid->column('current_quantity', __('Current quantity'))->display(function($current_quantity){
             return number_format($current_quantity, 2).' '.$this->measurement_unit;
@@ -88,8 +88,8 @@ class StockSubCategoryController extends AdminController
         $show->field('image', __('Image'));
         $show->field('buying_price', __('Buying price'));
         $show->field('selling_price', __('Selling price'));
-        $show->field('expected_price', __('Expected price'));
-        $show->field('earned_price', __('Earned price'));
+        $show->field('expected_profit', __('Expected Profit'));
+        $show->field('earned_profit', __('Earned Profit'));
         $show->field('measurement_unit', __('Measurement unit'));
         $show->field('current_quantity', __('Current quantity'));
         $show->field('reorder_level', __('Reorder level'));

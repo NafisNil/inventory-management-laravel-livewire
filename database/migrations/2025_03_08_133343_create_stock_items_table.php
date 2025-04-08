@@ -38,8 +38,8 @@ return new class extends Migration
             $table->string('gallery')->nullable();
             $table->bigInteger('buying_price')->default(0);
             $table->bigInteger('selling_price')->default(0);
-            $table->bigInteger('original_price')->default(0);
-            $table->bigInteger('current_price')->default(0);
+            $table->bigInteger('original_quantity')->default(0);
+            $table->bigInteger('current_quantity')->default(0);
             $table->timestamps();
         });
     }

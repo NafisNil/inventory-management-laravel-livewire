@@ -20,8 +20,8 @@ return new class extends Migration
             $table->string('image')->nullable();
             $table->bigInteger('buying_price')->nullable()->default(0);
             $table->bigInteger('selling_price')->nullable()->default(0);
-            $table->bigInteger('expected_price')->nullable()->default(0);
-            $table->bigInteger('earned_price')->nullable()->default(0);
+            $table->bigInteger('expected_profit')->nullable()->default(0);
+            $table->bigInteger('earned_profit')->nullable()->default(0);
             $table->timestamps();
             
         });

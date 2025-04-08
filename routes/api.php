@@ -38,7 +38,7 @@ Route::get('/stock-sub-categories', function(Request $request){
         # code...
         $data[]=[
             'id' => $value->id,
-            'text' => $value->name_text
+            'text' => $value->name_text.' ('.$value->measurement_unit.')',
         ];
     }
 

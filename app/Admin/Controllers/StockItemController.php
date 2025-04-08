@@ -3,11 +3,13 @@
 namespace App\Admin\Controllers;
 
 use App\Models\StockItem;
+use App\Models\StockSubCategory;
 use Encore\Admin\Controllers\AdminController;
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
 use Encore\Admin\Show;
 use Encore\Admin\Facades\Admin;
+use App\Models\Utils;
 class StockItemController extends AdminController
 {
     /**
@@ -48,8 +50,8 @@ class StockItemController extends AdminController
         $grid->column('gallery', __('Gallery'));
         $grid->column('buying_price', __('Buying price'));
         $grid->column('selling_price', __('Selling price'));
-        $grid->column('original_price', __('Original price'));
-        $grid->column('current_price', __('Current price'));
+        $grid->column('original_quantity', __('Original Quantity (In Unit)'));
+        $grid->column('current_quantity', __('Current Quantity (In Unit)'));
         $grid->column('created_at', __('Created at'));
         $grid->column('updated_at', __('Updated at'));
 
@@ -87,8 +89,8 @@ class StockItemController extends AdminController
         $show->field('gallery', __('Gallery'));
         $show->field('buying_price', __('Buying price'));
         $show->field('selling_price', __('Selling price'));
-        $show->field('original_price', __('Original price'));
-        $show->field('current_price', __('Current price'));
+        $show->field('original_quantity', __('Original Quantity'));
+        $show->field('current_quantity', __('Current Quantity'));
         $show->field('created_at', __('Created at'));
         $show->field('updated_at', __('Updated at'));
 
@@ -104,7 +106,11 @@ class StockItemController extends AdminController
     {
         $form = new Form(new StockItem());
         $user = Admin::user();
-       
+        $financial_period = Utils::getActiveFinancialPeriod($user->company_id);
+        if ($financial_period == null) {
+            # code...
+            return admin_error("Please create a financial periods!");
+        }
         $form->text('company_id',__('Company ID'))->default($user->company_id)->readonly();
         if ($form->isCreating()) {
             # code...
@@ -114,27 +120,57 @@ class StockItemController extends AdminController
         $sub_cat_ajax_url = url('api/stock-sub-categories');
         $sub_cat_ajax_url = $sub_cat_ajax_url. '?company_id='. $user->company_id;
        // dd($sub_cat_ajax_url);
-        $form->number('created_by_id', __('Created by id'));
-        $form->number('financial_period_id', __('Financial period id'));
-        $form->select('stock_sub_category_id', __('Stock category '))->ajax($sub_cat_ajax_url)->rules('required');
+   
+        $form->number('financial_period_id', __('Financial period id'))->readonly();
+        $form->select('stock_sub_category_id', __('Stock category '))->ajax($sub_cat_ajax_url)->options(function ($id) {
+           $sub_cat = StockSubCategory::find($id);
+           if ($sub_cat) {
+            # code...
+                 return [$sub_cat->id => $sub_cat->name_text.' ('.$sub_cat->measurement_unit.')'];
+           } else {
+            # code...
+                return [];
+           }
+        })->rules('required');
+
+
        //$form->number('stock_sub_category_id', __('Stock sub category id'));
-        $form->text('name', __('Name'));
+        $form->text('name', __('Name'))->rules('required');
         $form->textarea('description', __('Description'));
-        $form->image('image', __('Image'));
-        $form->text('sku', __('Sku'));
-        $form->text('barcode', __('Barcode'));
+        $form->image('image', __('Image'))->uniqueName();
+    //    $form->text('sku', __('Sku'));
+      //  $form->text('barcode', __('Barcode'));
         $form->text('model', __('Model'));
         $form->text('brand', __('Brand'));
         $form->color('color', __('Color'));
         $form->text('size', __('Size'));
-        $form->text('generate_sku', __('Generate sku'));
-        $form->text('update_sku', __('Update sku'));
+        
+
+        if ($form->isEditing()) {
+            # code...
+            $form->radio('update_sku', __('Update sku'))->options([
+                'Yes' => "Yes",
+                'No' => 'No'
+            ])->when('Yes', function(Form $form){
+                $form->text('sku', __('Enter SKU'))->rules('required');
+            })->rules('required')->default('No');
+        }else{
+            
+            $form->radio('generate_sku', __('Generate sku'))->options([
+                'Manual' => "Manual",
+                'Auto' => 'Auto'
+            ])->when('Manual', function(Form $form){
+                $form->text('sku', __('Enter SKU'))->rules('required');
+            })->rules('required');
+        }
+        
         $form->text('weight_unit', __('Weight unit'));
-        $form->text('gallery', __('Gallery'));
-        $form->number('buying_price', __('Buying price'));
-        $form->number('selling_price', __('Selling price'));
-        $form->number('original_price', __('Original price'));
-        $form->number('current_price', __('Current price'));
+        $form->multipleImage('gallery', __('Item Gallery'))->removable()->uniqueName()->downloadable();
+        $form->decimal('buying_price', __('Buying price'))->default('0.00')->rules('required|numeric|min:0');
+        $form->decimal('selling_price', __('Selling price'))->default('0.00')->rules('required|numeric|min:0');
+     
+        $form->decimal('original_quantity', __('Original Quantity (In Unit)'))->default(0)->rules('required|numeric|min:0');
+
 
         return $form;
     }
