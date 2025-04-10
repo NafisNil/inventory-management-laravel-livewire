@@ -52,6 +52,13 @@ class StockSubCategoryController extends AdminController
         $grid->column('selling_price', __('Selling price'))->sortable();
         $grid->column('expected_profit', __('Expected Profit'))->sortable();
         $grid->column('earned_profit', __('Earned Profit'))->sortable();
+        $grid->column('in_stock',__('In stock'))->label([
+            'Yes' => 'success',
+            'No' => 'danger',
+        ])->sortable()->filter([
+            'Yes' => 'In Stock',
+            'No' => 'Out of Stock',
+        ]);
     
         $grid->column('current_quantity', __('Current quantity'))->display(function($current_quantity){
             return number_format($current_quantity, 2).' '.$this->measurement_unit;

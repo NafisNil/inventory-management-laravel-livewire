@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\StockSubCategory;
+use App\Models\StockItem;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -39,6 +41,36 @@ Route::get('/stock-sub-categories', function(Request $request){
         $data[]=[
             'id' => $value->id,
             'text' => $value->name_text.' ('.$value->measurement_unit.')',
+        ];
+    }
+
+    return response()->json([
+        'data' => $data
+    ]);
+});
+
+
+
+Route::get('/stock-items', function(Request $request){
+    $company_id = $request->get('company_id');
+    if ($company_id == null) {
+        # code...
+        return response()->json([
+            'message' => 'Company Id is required!'
+        ], 400);
+    }
+    $q = $request->get('q');
+    $sub_categories = StockItem::where('company_id', $company_id)
+    ->where('name', 'like', "%$q%")
+    ->orderBy('name', 'asc')
+    ->get();
+
+    $data = [];
+    foreach ($sub_categories as $key => $value) {
+        # code...
+        $data[]=[
+            'id' => $value->id,
+            'text' => $value->name_text,
         ];
     }
 

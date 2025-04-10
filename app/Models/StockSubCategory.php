@@ -16,6 +16,7 @@ class StockSubCategory extends Model
         }
         $total_buying_price = 0;
         $total_selling_price = 0;
+        $current_quantity = 0;
 
         $stock_items = StockItem::where('stock_sub_category_id', $this->id)
             ->where('financial_period_id', $active_financial_period->id)
@@ -25,12 +26,21 @@ class StockSubCategory extends Model
                 # code...
                 $total_buying_price += $value->buying_price * $value->current_quantity;
                 $total_selling_price += $value->selling_price * $value->current_quantity;
+                $current_quantity += $value->current_quantity;
             }
 
             $total_expected_profit = $total_selling_price - $total_buying_price;
             $this->buying_price = $total_buying_price;
             $this->selling_price = $total_selling_price;
             $this->expected_profit = $total_expected_profit;
+            $this->current_quantity = $current_quantity;
+
+            if ($current_quantity >  $this->reorder_level) {
+                # code...
+                $this->in_stock = 'Yes';
+            }else{
+                $this->in_stock = 'No';
+            }
             $this->save();
     }
     public function stockCategory(){

@@ -31,6 +31,10 @@ class StockItem extends Model
                 if ($stock_category != null) {
                     $stock_category->update_self();
                 }
+                $stock_sub_category = StockSubCategory::find($model->stock_sub_category_id);
+                if ($stock_sub_category != null) {
+                    $stock_sub_category->update_self();
+                }
             });
 
             static::updated(function ($model) {
@@ -38,12 +42,22 @@ class StockItem extends Model
                 if ($stock_category != null) {
                     $stock_category->update_self();
                 }
+
+                $stock_sub_category = StockSubCategory::find($model->stock_sub_category_id);
+                if ($stock_sub_category != null) {
+                    $stock_sub_category->update_self();
+                }
             });
 
             static::deleted(function ($model) {
                 $stock_category = StockCategory::find($model->stock_category_id);
                 if ($stock_category != null) {
                     $stock_category->update_self();
+                }
+
+                $stock_sub_category = StockSubCategory::find($model->stock_sub_category_id);
+                if ($stock_sub_category != null) {
+                    $stock_sub_category->update_self();
                 }
             });
         }
@@ -96,4 +110,24 @@ public function getGalleryAttribute($pictures)
     }
     return [];
 }
+
+    public $appends = ['name_text'];
+
+    public function getNameTextAttribute()
+    {
+        $name_text = $this->name;
+        if ($this->stockSubCategory != null) {
+            # code...
+           
+                $name_text = $name_text. "-".$this->stockSubCategory->name;
+        }
+        $name_text = $name_text. " (".$this->stockSubCategory->measurement_unit.")". " - ". $this->current_quantity;
+        return $name_text;
+
+    }
+
+    public function stockSubCategory()
+    {
+        return $this->belongsTo(StockSubCategory::class, 'stock_sub_category_id', 'id');
+    }
 }
