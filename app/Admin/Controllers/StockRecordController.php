@@ -17,7 +17,7 @@ class StockRecordController extends AdminController
      *
      * @var string
      */
-    protected $title = 'Stock Record';
+    protected $title = 'Stock Out Record';
 
     /**
      * Make a grid builder.
@@ -37,7 +37,7 @@ class StockRecordController extends AdminController
         $grid->column('name', __('Name'));
         $grid->column('sku', __('Sku'));
         $grid->column('quantity', __('quantity'));
-        $grid->column('measuring_unit', __('Measuring unit'));
+        $grid->column('measurement_unit', __('Measuring unit'));
         $grid->column('selling_price', __('Selling price'));
         $grid->column('total_sales', __('Total sales'));
         $grid->column('description', __('Description'));
@@ -68,7 +68,7 @@ class StockRecordController extends AdminController
         $show->field('name', __('Name'));
         $show->field('sku', __('Sku'));
         $show->field('quantity', __('quantity'));
-        $show->field('measuring_unit', __('Measuring unit'));
+        $show->field('measurement_unit', __('Measuring unit'));
         $show->field('selling_price', __('Selling price'));
         $show->field('total_sales', __('Total sales'));
         $show->field('description', __('Description'));
@@ -107,7 +107,7 @@ class StockRecordController extends AdminController
         })->rules('required');
    
         $form->number('created_by_id', __('Created by id'))->default($user->id)->readonly();
-
+        $form->number('quantity', __('Quantity'))->rules('required|numeric|min:0');
         $form->textarea('description', __('Description'));
         $form->radio('type', __('Type'))->options([
             'Sales' => 'Sales',

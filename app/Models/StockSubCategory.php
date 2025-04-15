@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class StockSubCategory extends Model
 {
     use HasFactory;
+    //boot
+
 
     public function update_self(){
         $active_financial_period = Utils::getActiveFinancialPeriod($this->company_id);
@@ -35,12 +37,20 @@ class StockSubCategory extends Model
             $this->expected_profit = $total_expected_profit;
             $this->current_quantity = $current_quantity;
 
+
+
             if ($current_quantity >  $this->reorder_level) {
                 # code...
                 $this->in_stock = 'Yes';
             }else{
                 $this->in_stock = 'No';
             }
+
+            $this->earned_profit= StockRecord::where('stock_sub_category_id', $this->id)
+            ->where('financial_period_id', $active_financial_period->id)
+            ->sum('profit');
+    
+
             $this->save();
     }
     public function stockCategory(){

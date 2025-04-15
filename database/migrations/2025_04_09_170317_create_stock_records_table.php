@@ -25,7 +25,7 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->string('sku')->nullable();
             $table->string('quantity')->nullable();
-            $table->string('measuring_unit');
+            $table->string('measurement_unit');
             $table->string('selling_price');
             $table->string('total_sales');
             $table->text('description')->nullable();

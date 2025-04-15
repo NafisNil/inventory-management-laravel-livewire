@@ -26,20 +26,26 @@ class EmployeesController extends AdminController
     protected function grid()
     {
         $grid = new Grid(new User());
-
+        $grid->quickSearch('username', 'name', 'first_name', 'last_name', 'phone_number', 'phone_number_2')->placeholder('Search by username, name, first name, last name, phone number');
         $grid->column('id', __('Id'));
         $grid->column('username', __('Username'));
-        $grid->column('password', __('Password'));
-        $grid->column('name', __('Name'));
-        $grid->column('avatar', __('Avatar'));
-        $grid->column('remember_token', __('Remember token'));
+
+        $grid->column('name', __('Name'))->display(function ($name) {
+            return $this->first_name . ' ' . $this->last_name;
+        })->sortable();
+        $grid->column('avatar', __('Image'))->lightbox(
+           [
+                'width' => 60,
+                'height' => 60,
+           ]
+        );
+
         $grid->column('created_at', __('Created at'));
         $grid->column('updated_at', __('Updated at'));
         $grid->column('company_id', __('Company id'));
         $grid->column('phone_number', __('Phone number'));
         $grid->column('phone_number_2', __('Phone number 2'));
-        $grid->column('first_name', __('First name'));
-        $grid->column('last_name', __('Last name'));
+
         $grid->column('address', __('Address'));
         $grid->column('sex', __('Sex'));
         $grid->column('dob', __('Dob'));

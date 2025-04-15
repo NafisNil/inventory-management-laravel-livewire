@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class StockCategory extends Model
 {
     use HasFactory;
+
+     
+
     public function update_self(){
         $active_financial_period = Utils::getActiveFinancialPeriod($this->company_id);
         if ($active_financial_period == null) {
@@ -24,6 +27,10 @@ class StockCategory extends Model
 
 
         $total_expected_profit = $total_selling_price - $total_buying_price;
+
+        $this->earned_profit= StockRecord::where('stock_category_id', $this->id)
+            ->where('financial_period_id', $active_financial_period->id)
+            ->sum('profit');
         $this->buying_price = $total_buying_price;
         $this->selling_price = $total_selling_price;
         $this->expected_profit = $total_expected_profit;
