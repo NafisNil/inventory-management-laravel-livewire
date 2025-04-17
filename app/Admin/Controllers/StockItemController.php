@@ -2,6 +2,8 @@
 
 namespace App\Admin\Controllers;
 
+use App\Models\FinancialPeriod;
+use App\Models\StockCategory;
 use App\Models\StockItem;
 use App\Models\StockSubCategory;
 use Encore\Admin\Controllers\AdminController;
@@ -9,6 +11,7 @@ use Encore\Admin\Form;
 use Encore\Admin\Grid;
 use Encore\Admin\Show;
 use Encore\Admin\Facades\Admin;
+use App\Models\User;
 use App\Models\Utils;
 class StockItemController extends AdminController
 {
@@ -27,17 +30,68 @@ class StockItemController extends AdminController
     protected function grid()
     {
         $grid = new Grid(new StockItem());
+        $grid->filter(function($filter) {
+            $filter->disableIdFilter();
+            $filter->like('name', __('Name'));
+            $filter->like('sku', __('SKU'));
+            $filter->between('created_at', __('Created at'))->datetime();
+        });
         $user = Admin::user();
        
         $grid->column('id', __('Id'));
 
-        $grid->column('created_by_id', __('Created by id'));
-        $grid->column('financial_period_id', __('Financial period id'));
-        $grid->column('stock_category_id', __('Stock category id'));
-        $grid->column('stock_sub_category_id', __('Stock sub category id'));
-        $grid->column('name', __('Name'));
-        $grid->column('description', __('Description'));
-        $grid->column('image', __('Image'));
+        $grid->column('created_by_id', __('Created by id'))->display(function($created_by_id){
+            $user = User::find($created_by_id);
+            if ($user) {
+                # code...
+                return $user->name;
+            } else {
+                # code...
+                return 'N/A';
+            }
+            
+        });
+        $grid->column('financial_period_id', __('Financial period '))->display(function($financial_period_id){
+            $financial_period = FinancialPeriod::find($financial_period_id);
+            if ($financial_period) {
+                # code...
+                return $financial_period->name;
+            } else {
+                # code...
+                return 'N/A';
+            }
+
+        });
+        $grid->column('stock_category_id', __('Stock category '))->display(function($stock_category_id){
+            $sub_cat = StockCategory::find($stock_category_id);
+            if ($sub_cat) {
+                # code...
+                return $sub_cat->name;
+            } else {
+                # code...
+                return 'N/A';
+            }
+            
+        });
+        $grid->column('stock_sub_category_id', __('Stock sub category '))->display(function($stock_sub_category_id){
+            $sub_cat = StockSubCategory::find($stock_sub_category_id);
+            if ($sub_cat) {
+                # code...
+                return $sub_cat->name;
+            } else {
+                # code...
+                return 'N/A';
+            }
+            
+        });
+        $grid->column('name', __('Name'))->sortable();
+        $grid->column('description', __('Description'))->hide();
+        $grid->column('image', __('Image'))->lightbox(
+            [
+                'width' => 60,
+                'height' => 60,
+            ]
+        );
         $grid->column('sku', __('Sku'));
         $grid->column('barcode', __('Barcode'));
         $grid->column('model', __('Model'));
@@ -70,7 +124,17 @@ class StockItemController extends AdminController
 
         $show->field('id', __('Id'));
         $show->field('company_id', __('Company id'));
-        $show->field('created_by_id', __('Created by id'));
+        $show->field('created_by_id', __('Created by id'))->display(function($created_by_id){
+            $user = User::find($created_by_id);
+            if ($user) {
+                # code...
+                return $user->name;
+            } else {
+                # code...
+                return 'N/A';
+            }
+            
+        })->readonly();
         $show->field('financial_period_id', __('Financial period id'));
         $show->field('stock_category_id', __('Stock category id'));
         $show->field('stock_sub_category_id', __('Stock sub category id'));
@@ -114,7 +178,7 @@ class StockItemController extends AdminController
         $form->text('company_id',__('Company ID'))->default($user->company_id)->readonly();
         if ($form->isCreating()) {
             # code...
-            $form->text('created_by_id', __('Created By ') )->default($user->id)->readonly();
+            $form->text('created_by_id', __('Created By ') )->readonly();
         }
        
         $sub_cat_ajax_url = url('api/stock-sub-categories');

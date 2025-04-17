@@ -26,6 +26,7 @@ class EmployeesController extends AdminController
     protected function grid()
     {
         $grid = new Grid(new User());
+        $user = Admin::user();
         $grid->quickSearch('username', 'name', 'first_name', 'last_name', 'phone_number', 'phone_number_2')->placeholder('Search by username, name, first name, last name, phone number');
         $grid->column('id', __('Id'));
         $grid->column('username', __('Username'));
@@ -40,16 +41,28 @@ class EmployeesController extends AdminController
            ]
         );
 
-        $grid->column('created_at', __('Created at'));
-        $grid->column('updated_at', __('Updated at'));
-        $grid->column('company_id', __('Company id'));
+        $grid->column('created_at', __('Registered at'))->display(function ($created_at) {
+            return date('d M Y', strtotime($created_at));
+        })->sortable();
+        $grid->column('updated_at', __('Updated at'))->display(function ($updated_at) {
+            return date('d M Y', strtotime($updated_at));
+        })->sortable();;
+        $grid->model()->where('company_id', $user->company_id);
         $grid->column('phone_number', __('Phone number'));
         $grid->column('phone_number_2', __('Phone number 2'));
 
         $grid->column('address', __('Address'));
-        $grid->column('sex', __('Sex'));
+        $grid->column('sex', __('Sex'))->filter(
+            [
+                'Male'=>'Male',
+                'Female' => 'Female'
+            ]
+        )->sortable();
         $grid->column('dob', __('Dob'));
-        $grid->column('status', __('Status'));
+        $grid->column('status', __('Status'))->label([
+            'Active' => 'success',
+            'Inactive' => 'danger'
+        ])->sortable();
 
         return $grid;
     }

@@ -9,6 +9,7 @@ use Encore\Admin\Form;
 use Encore\Admin\Grid;
 use Encore\Admin\Show;
 use Encore\Admin\Facades\Admin;
+use App\Models\User;
 
 class StockRecordController extends AdminController
 {
@@ -27,23 +28,67 @@ class StockRecordController extends AdminController
     protected function grid()
     {
         $grid = new Grid(new StockRecord());
-        
-        $grid->column('id', __('Id'));
-        $grid->column('company_id', __('Company id'));
-        $grid->column('stock_category_id', __('Stock category id'));
-        $grid->column('stock_sub_category_id', __('Stock sub category id'));
+        $grid->quickSearch('name', 'sku')->placeholder('Search by name, sku');
+        $grid->filter(function($filter) {
+            $filter->disableIdFilter();
+            $filter->like('name', __('Name'));
+            $filter->like('sku', __('SKU'));
+            $filter->between('created_at', __('Created at'))->datetime();
+        });
+        $user = Admin::user();
+        $grid->column('id', __('Id'))->sortable();
+        $grid->column('company_id', __('Company id'))->display(function($company_id){
+            $user = User::find($company_id);
+            if ($user) {
+                # code...
+                return $user->name;
+            } else {
+                # code...
+                return 'N/A';
+            }
+        });
+        $grid->column('stock_category_id', __('Stock category'))->display(function($stock_category_id){
+            $stock_item = StockItem::find($stock_category_id);
+            if ($stock_item) {
+                # code...
+                return $stock_item->stockCategory->name;
+            } else {
+                # code...
+                return 'N/A';
+            }
+        });
+        $grid->column('stock_sub_category_id', __('Stock sub category id'))->display(function($stock_sub_category_id){
+            $stock_item = StockItem::find($stock_sub_category_id);
+            if ($stock_item) {
+                # code...
+                return $stock_item->stockSubCategory->name;
+            } else {
+                # code...
+                return 'N/A';
+            }
+        });
         $grid->column('stock_item_id', __('Stock item id'));
         $grid->column('created_by_id', __('Created by id'));
         $grid->column('name', __('Name'));
         $grid->column('sku', __('Sku'));
-        $grid->column('quantity', __('quantity'));
+        $grid->column('quantity', __('quantity'))->display(function($quantity){
+            return abs($quantity).' - '.$this->measurement_unit;
+        })->sortable()->totalRow(function ($amount) {
+            return 'Total: ' . abs($amount);
+        });
         $grid->column('measurement_unit', __('Measuring unit'));
-        $grid->column('selling_price', __('Selling price'));
+        $grid->column('selling_price', __('Selling price'))->totalRow(function ($amount) {
+            return 'Total: ' . abs($amount) .' BDT';
+        });
         $grid->column('total_sales', __('Total sales'));
-        $grid->column('description', __('Description'));
+        $grid->column('description', __('Description'))->hide();
         $grid->column('type', __('Type'));
-        $grid->column('created_at', __('Created at'));
-        $grid->column('updated_at', __('Updated at'));
+        $grid->column('created_at', __('Created at'))->display(function(){
+            return date('d M Y', strtotime($this->created_at));
+        })->sortable();
+        $grid->column('updated_at', __('Updated at'))->display(function(){
+            return date('d M Y', strtotime($this->updated_at));
+        })->sortable();
 
         return $grid;
     }
